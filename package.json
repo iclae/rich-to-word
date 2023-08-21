@@ -1,0 +1,40 @@
+{
+  "name": "rich-to-word",
+  "version": "0.0.1",
+  "description": "rich text convert to docx",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "dev": "father dev",
+    "build": "father build",
+    "build:deps": "father prebundle",
+    "prepublishOnly": "father doctor && npm run build"
+  },
+  "keywords": [
+    "rich text",
+    "docx",
+    "word"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iclae/rich-to-word.git"
+  },
+  "authors": [
+    "iclae0@gmail.com"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "compiled"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "father": "^4.3.1"
+  },
+  "dependencies": {
+    "html-to-docx": "^1.8.0",
+    "image-to-base64": "^2.2.0"
+  }
+}
