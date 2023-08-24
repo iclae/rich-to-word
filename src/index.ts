@@ -1,12 +1,15 @@
 // @ts-ignore
-import imageToBase64 from 'image-to-base64/browser';
+import imageToBase64 from 'image-to-base64/browser.min.js';
 // @ts-ignore
-import HTMLtoDOCX from 'html-to-docx/dist/html-to-docx.esm';
+import HTMLtoDOCX from 'html-to-docx/dist/html-to-docx.umd';
+// @ts-ignore
+import { saveAs } from 'file-saver';
 
 const regex = /<img[^>]+src="([^">]+)"/gi;
 
-export default function richToWord(richText: string): Promise<Blob> {
-  return new Promise(async (resolve, reject) => {
+// 将富文本中的图片转换为base64编码
+function convertImages(richText: string): Promise<string> {
+  return new Promise<string>(async (resolve, reject) => {
     let result = richText;
     let match;
     while ((match = regex.exec(richText)) !== null) {
@@ -24,11 +27,25 @@ export default function richToWord(richText: string): Promise<Blob> {
         }
       }
     }
-    try {
-      const blob = await HTMLtoDOCX(result);
-      resolve(blob);
-    } catch (error) {
-      reject(error);
-    }
+    resolve(result);
   });
+}
+
+export default function richToWord(
+  richText: string,
+  options = {}
+): Promise<Blob> {
+  return new Promise(async resolve => {
+    const result = await convertImages(richText);
+    const data = await HTMLtoDOCX(result, null, options);
+    resolve(data);
+  });
+}
+export async function richToWordSave(
+  richText: string,
+  docxName: string = 'word',
+  options = {}
+) {
+  const blob = await richToWord(richText, options);
+  saveAs(blob, `${docxName}.docx`);
 }

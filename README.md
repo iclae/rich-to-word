@@ -14,9 +14,21 @@ const blob = await richToWord(html);
 const link = document.createElement('a');
 const blobUrl = window.URL.createObjectURL(blob);
 link.href = blobUrl;
-link.download = 'test.docx';
+link.download = 'word.docx';
 link.click();
 
+```
+
+or
+
+```js
+import { richToWordSave } from 'rich-to-word';
+// use file-saver to download
+
+const richText = `<p>hello rich-to-word</p><p><img src="https://avatars.githubusercontent.com/u/8125081?v=4" alt="" data-href="" style=""/></p>`;
+
+richToWordSave(richText, 'word');
+// await richToWordSave(richText, 'word');
 ```
 
 ## LICENSE
