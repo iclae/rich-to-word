@@ -7,6 +7,19 @@ import { saveAs } from 'file-saver';
 
 const regex = /<img[^>]+src="([^">]+)"/gi;
 
+const IMG_DEFAULT = 'width:100%;';
+
+// see https://github.com/privateOmega/html-to-docx#parameters
+type DocumentOptionType = {
+  [key: string]: any;
+};
+
+type RichToWordOptionType = {
+  imgDefaultStyle?: string;
+  disablePreprocess?: boolean;
+  documentOptions?: DocumentOptionType;
+};
+
 // 将富文本中的图片转换为base64编码
 function convertImages(richText: string): Promise<string> {
   return new Promise<string>(async (resolve, reject) => {
@@ -31,20 +44,68 @@ function convertImages(richText: string): Promise<string> {
   });
 }
 
+function preprocessor(
+  richText: string,
+  imgDefaultStyle: string = IMG_DEFAULT,
+  disablePreprocess: boolean = false
+) {
+  let htmlDom = document.createElement('div');
+  htmlDom.innerHTML = richText;
+
+  // if img has no style, set default style, can fix img not show in word
+  htmlDom.querySelectorAll('img').forEach(item => {
+    let imgStyle = item.getAttribute('style');
+    if (!imgStyle) {
+      item.setAttribute(
+        'style',
+        imgDefaultStyle === '' ? IMG_DEFAULT : imgDefaultStyle
+      );
+    }
+  });
+
+  if (!disablePreprocess) {
+    // code preprocess
+    htmlDom.querySelectorAll('code').forEach(item => {
+      let newItemWrapper = document.createElement('span');
+      newItemWrapper.setAttribute('style', 'background-color: #f5f2f0;');
+      let newItem = document.createElement('pre');
+      newItem.innerHTML = item.innerHTML;
+      newItemWrapper.appendChild(newItem);
+      item.parentNode?.replaceChild(newItemWrapper, item);
+    });
+
+    // italic preprocess
+    htmlDom.querySelectorAll('em').forEach(item => {
+      let newItem = document.createElement('i');
+      newItem.innerHTML = item.innerHTML;
+      item.parentNode?.replaceChild(newItem, item);
+    });
+  }
+
+  return htmlDom.innerHTML;
+}
+
 export default function richToWord(
   richText: string,
-  options = {}
+  options: RichToWordOptionType = {}
 ): Promise<Blob> {
   return new Promise(async resolve => {
-    const result = await convertImages(richText);
-    const data = await HTMLtoDOCX(result, null, options);
+    const {
+      imgDefaultStyle,
+      disablePreprocess,
+      documentOptions = {},
+    } = options;
+    const result = await convertImages(
+      preprocessor(richText, imgDefaultStyle, disablePreprocess)
+    );
+    const data = await HTMLtoDOCX(result, null, documentOptions);
     resolve(data);
   });
 }
 export async function richToWordSave(
   richText: string,
   docxName: string = 'word',
-  options = {}
+  options: RichToWordOptionType = {}
 ) {
   const blob = await richToWord(richText, options);
   saveAs(blob, `${docxName}.docx`);
