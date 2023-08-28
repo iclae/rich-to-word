@@ -1,6 +1,6 @@
 {
   "name": "rich-to-word",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "rich text convert to docx",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
